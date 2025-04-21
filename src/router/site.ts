@@ -42,4 +42,6 @@ siteRouter.post('/order/create', siteController.orderCreate)
 
 siteRouter.get('/zones', siteController.getZones)
 
+siteRouter.post('/shop_time', siteController.getShopTime)
+
 export {siteRouter}

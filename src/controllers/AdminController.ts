@@ -535,6 +535,8 @@ class AdminController {
         try{
             const {title, address, openingHours, coordinateX, coordinateY} = req.body;
             if(!address || !openingHours || !coordinateX || !coordinateY || !title) throw RequestError.BadRequest('Одно из свойств отсутствует')
+            const validationOpeningHours = shopService.validationOpeningHours(openingHours)
+            if(!validationOpeningHours) throw RequestError.BadRequest('Неправильный формат времени работы. Формат: часы как цифра (9, 21), минуты как MM (06, 52). "HH:MM - HH:MM" или "24 часа"')
             await shopService.create(title, address, openingHours, coordinateX, coordinateY)
             res.send({message: 'Магазина создан'})
         }
@@ -547,6 +549,8 @@ class AdminController {
         try{
             const {id, title, address, openingHours, coordinateX, coordinateY} = req.body;
             if(!id || !address || !title || !openingHours || !coordinateX || !coordinateY) throw RequestError.BadRequest('Одно из свойств отсутствует')
+            const validationOpeningHours = shopService.validationOpeningHours(openingHours)
+            if(!validationOpeningHours) throw RequestError.BadRequest('Неправильный формат времени работы. Формат: часы как цифра (9, 21), минуты как MM (06, 52). "HH:MM - HH:MM" или "24 часа"')
             await shopService.update(id, title, address, openingHours, coordinateX, coordinateY)
             res.send({message: 'Магазин обновлен'})
         }

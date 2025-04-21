@@ -39,7 +39,7 @@ export { IOrder, IOrderItem, IOrderReq, IOrderRes } from "./order/types";
 export { TStatus } from "./order/types";
 
 export { Shop } from "./shop/model";
-export { IShop } from "./shop/types";
+export { IShop, TAllTime } from "./shop/types";
 
 export { ShopProduct } from "./shopProduct/model";
 export { IShopProductDB } from "./shopProduct/types";

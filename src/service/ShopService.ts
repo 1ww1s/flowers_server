@@ -1,11 +1,27 @@
 import { Op, QueryTypes } from "sequelize"
 import { DatabaseError } from "../error/DatabaseError"
-import { IShop, Shop } from "../models"
+import { IShop, Shop, TAllTime } from "../models"
 import slugify from "slugify"
 import { TResFilter } from "./CategoryService"
 
 
 class ShopService {
+
+    validationOpeningHours(openingHours: string | TAllTime): boolean {
+        const allTime: TAllTime = '24 часа'
+        if (openingHours === allTime) {
+            return true;
+        }
+        const [opening, closing] = openingHours.split(' - ')
+        const isValidOpening = shopService.validationTime(opening)
+        const isValidClosing = shopService.validationTime(closing)
+        return isValidOpening && isValidClosing
+    }
+
+    validationTime(time: string){
+        const timeRegex = /^(0?[0-9]|1[0-9]|2[0-3]):([0-5][0-9])$/;
+        return timeRegex.test(time);
+    }
 
     async create(title: string, address: string, openingHours: string, x: number, y: number){
         const titleSlug = slugify(title.toLowerCase())
