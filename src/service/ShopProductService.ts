@@ -33,10 +33,8 @@ class ShopProductService {
     async countProduct(ShopId: number, ProductId: number){
         const shopProductData = await ShopProduct.findOne({where: {ShopId, ProductId}}).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})
         if(!shopProductData) throw DatabaseError.NotFound(`Не найдена информация с productId=${ProductId} и shopId=${ShopId}`)
-        return shopProductData.count
+        return {id: shopProductData.id, count: shopProductData.count}
     }
-
-
 
     async updateAll(ProductId: number, shops: IShopProduct[]){
         const shopProductOld = await ShopProduct.findAll({where: {ProductId}}).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})
@@ -82,7 +80,6 @@ class ShopProductService {
     }
 
     async getInTheShop(productsId: number[], shopId: number): Promise<{productId: number, image: string, productCountMax: number}[]> {
-        console.log('AAAAAAAAAAAAA', productsId)
         const sqlQuery = `
             SELECT 
                 p.id AS "productId",

@@ -50,8 +50,8 @@ Product.belongsToMany(Shop, {through: ShopProduct, onDelete: 'CASCADE'})
 User.hasOne(RefreshToken, {onDelete: 'CASCADE'})
 RefreshToken.belongsTo(User)
 
-Product.belongsToMany(Order, {through: Detail, onDelete: 'CASCADE'})
-Order.belongsToMany(Product, {through: Detail, onDelete: 'CASCADE'})
+Product.belongsToMany(Order, {through: Detail})
+Order.belongsToMany(Product, {through: Detail})
 
 Shop.hasMany(Order, {onDelete: 'CASCADE'})
 Order.belongsTo(Shop)

@@ -4,7 +4,7 @@ import { productService } from "../service/ProductService";
 import { categoryService } from "../service/CategoryService";
 import { compositionService } from "../service/CompositionService";
 import { productCharacteristicService } from "../service/ProductCharacteristicService";
-import { IBanner, ICategory, IFilters, IProductCard, IProductReq, IShop, IUserDto } from "../models";
+import { IBanner, ICategory, ICharacteristic, IFilters, IOrderReq, IProductCard, IProductReq, IShop } from "../models";
 import { productCategoryService } from "../service/ProductCategoryService";
 import { shopProductService } from "../service/ShopProductService";
 import { shopService } from "../service/ShopService";
@@ -12,9 +12,59 @@ import { RequestError } from "../error/RequestError";
 import { bannerService } from "../service/BannerService";
 import { orderService } from "../service/OrderService";
 import { AuthError } from "../error/AuthError";
-// import { shopProductService } from "../service/ShopProductService";
+import { zones } from "../const/zones";
+import { DatabaseError } from "../error/DatabaseError";
+import { characteristicService } from "../service/CharacteristicService";
+
 
 class SiteController {
+
+    // zone
+
+    async getZones(_: Request, res: Response, next: NextFunction){
+        try{
+            res.send(zones)
+        }
+        catch(e){
+            next(e)
+        }
+    }
+
+    // order
+
+    async orderCreate(req: Request<never, never, {order: IOrderReq}>, res: Response, next: NextFunction){
+        try{
+            const {order} = req.body;
+            if(!order) throw RequestError.BadRequest('Нет объекта заказа')
+            const paymentUrl = await orderService.createOrder(order)
+            if(!paymentUrl)  
+                throw RequestError.BadRequest('Заказ не был оформлен (данный формат оформления заказа не поддерживается)')
+            res.json({ paymentUrl });
+        }
+        catch(e){
+            console.log(e)
+            next(e)
+        }
+    }
+
+    // 
+    
+    async getCharacteristic(req: Request<any, any, {name: string}>, res: Response, next: NextFunction){
+        try{
+            const {name} = req.body;
+            if(!name) throw RequestError.BadRequest('Нет названия характеристики')
+            const characteristic = await characteristicService.getByName(name)
+            if(!characteristic) throw DatabaseError.NotFound(`не найдена характеристика с name=${name}`)
+            const characteristicRes: Omit<ICharacteristic, 'slug'> = {
+                id: characteristic.id,
+                name: characteristic.name,
+            }
+            res.send(characteristicRes)
+        }
+        catch(e){
+            next(e)
+        }
+    }
 
     async flowersGetAll(_: Request, res: Response, next: NextFunction){
         try{
@@ -26,10 +76,40 @@ class SiteController {
         }
     }
 
+    async flowerGet(req: Request<any, any, {name: string}>, res: Response, next: NextFunction){
+        try{
+            const name = req.body.name;
+            if(!name) throw RequestError.BadRequest('Нет названия цветка')
+            const flower = await itemService.getByName(name)
+            if(!flower) throw DatabaseError.NotFound(`Единица товара (цветок) с name=${name} не найдена`)
+            const resData = {
+                id: flower.id,
+                name: flower.name,
+            }
+            res.send(resData)
+        }
+        catch(e){
+            next(e)
+        }
+    }
+
     async shopsGetAll(_: Request, res: Response, next: NextFunction){
         try{
             const shops = await shopService.getAll()
             res.send(shops)
+        }
+        catch(e){
+            next(e)
+        }
+    }
+
+    
+    async shopsByCategory(req: Request<{slug: string}>, res: Response, next: NextFunction){
+        try{
+            const {slug} = req.params;
+            if(!slug) throw RequestError.BadRequest('Нет slug для категории')
+            const filter = await shopService.getAllByCategory(slug)
+            res.send(filter)
         }
         catch(e){
             next(e)
@@ -71,7 +151,20 @@ class SiteController {
     async getFilter(req: Request<{slug: string}>, res: Response, next: NextFunction){
         try{
             const {slug} = req.params;
+            if(!slug) throw RequestError.BadRequest('Нет slug для категории')
             const filter = await categoryService.getFilter(slug)
+            res.send(filter)
+        }
+        catch(e){
+            next(e)
+        }
+    }
+
+    async getFilterFlowers(req: Request<{slug: string}>, res: Response, next: NextFunction){
+        try{
+            const {slug} = req.params;
+            if(!slug) throw RequestError.BadRequest('Нет slug для категории')
+            const filter = await categoryService.getFlowers(slug)
             res.send(filter)
         }
         catch(e){
@@ -97,10 +190,11 @@ class SiteController {
         }
     }
 
-    async getOrder(req: Request<{id: string}, any, {user: IUserDto}>, res: Response, next: NextFunction){
+    async getOrder(req: Request<{id: string}>, res: Response, next: NextFunction){
         try{
             const id: string = req.params.id
-            const {user} = req.body;
+            const user = req.user;
+            if(!user) throw AuthError.UnauthorizedError()
             const order = await orderService.getFull(+id)
             const access = user.roles.includes('admin') // роли, у которых есть доступ к любым заказам
             if(!access && user.phone !== order.senderName){
@@ -251,7 +345,11 @@ class SiteController {
         try{
             const {ids} = req.body;
             const products = await Promise.all(ids.map(async id => {
-                return await productService.getPrev(id)
+                const item = await productService.getItem(id)
+                if(item){
+                    return {...item, id: String(item.id), price: String(item.price), slug: `/catalog/${item.categorySlug}/${item.slug}`}
+                }
+                return null
             }))
             res.send(products)
         }

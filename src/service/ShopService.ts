@@ -1,7 +1,8 @@
-import { Op } from "sequelize"
+import { Op, QueryTypes } from "sequelize"
 import { DatabaseError } from "../error/DatabaseError"
 import { IShop, Shop } from "../models"
 import slugify from "slugify"
+import { TResFilter } from "./CategoryService"
 
 
 class ShopService {
@@ -65,10 +66,43 @@ class ShopService {
         ))
     }
 
+    async getAllByCategory(slug: string){
+        type TRes = {name: string, slug: string, productCount: number}[]
+        const sqlQuery = `
+            SELECT 
+                s.title AS name,
+                s."titleSlug" AS slug,
+                COUNT(DISTINCT sp."ProductId") AS "productCount"
+            FROM public.shop s
+            JOIN public."shopProduct" sp ON s.id = sp."ShopId"
+            JOIN public.product p ON sp."ProductId" = p.id
+            JOIN public."productCategory" pc ON p.id = pc."ProductId" 
+            JOIN public.category cat ON pc."CategoryId" = cat.id
+            WHERE cat.slug = '${slug}'
+            GROUP BY s.id
+        `
+        const data: any = await Shop.sequelize?.query(
+            sqlQuery, {type: QueryTypes.SELECT}
+        ).catch((e: Error) => {throw DatabaseError.Conflict(e.message)});
+        if(!data) throw DatabaseError.NotFound(`Не найдена категория с slug=${slug}`)
+        const characteristicData: TRes = data;
+        const characteristicNames: TResFilter = {
+            characteristicName: 'Магазины',
+            characteristicSlug: 'shop',
+            values: characteristicData.map(data => ({
+                name: data.name,
+                slug: data.slug,
+                count: data.productCount
+            }))  
+        }
+        return characteristicNames
+    }
+
     async getStartsWith(StartsWith: string){
         const shops = await Shop.findAll({
+            attributes: ['title', 'titleSlug'],
             where: {
-                title: {[Op.startsWith]: StartsWith}
+                title: {[Op.iLike]: StartsWith + '%'}
             }
         }).catch((e: Error ) => {throw DatabaseError.Conflict(e.message)})
         return shops.map(shop => ({title: shop.title, slug: shop.titleSlug}))

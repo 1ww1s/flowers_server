@@ -7,10 +7,14 @@ const secretDefault = "GKRTYNDLTRSNGGMY"
 class TokenService {
 
     createTokens(userDto: IUserDto){
-        const access = sign({...userDto}, process.env.JWT_ACCESS_SECRET || secretDefault, {expiresIn: '1m'})
+        const access = sign({...userDto}, process.env.JWT_ACCESS_SECRET || secretDefault, {expiresIn: '5m'})
         const refresh = sign({...userDto}, process.env.JWT_REFRESH_SECRET || secretDefault, {expiresIn: '1d'})
         return {access, refresh}
     }   
+
+    async removeToken(token: string){
+        await RefreshToken.destroy({where: {token}}).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})
+    }
 
     async saveRefreshToken(UserId: number, token: string){
         try{

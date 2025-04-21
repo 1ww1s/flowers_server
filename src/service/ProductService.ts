@@ -1,7 +1,7 @@
 import slugify from "slugify";
 import { DatabaseError } from "../error/DatabaseError";
 import { RequestError } from "../error/RequestError";
-import { Category, Characteristic, CharacteristicValue, IComposition, IFilters, IProduct, IProductReq, Product, ProductCategory, ProductCharacteristicValue } from "../models";
+import { IComposition, IFilters, IProduct, IProductReq, Product, ProductCategory } from "../models";
 import { characteristicValueService } from "./CharacteristicValueService";
 import { compositionService } from "./CompositionService";
 import { productCharacteristicService } from "./ProductCharacteristicService";
@@ -123,6 +123,7 @@ class ProductService {
         limit: number = 4, categorySlug: string, filters: IFilters
     ): Promise<{products: IProduct[], totalPages: number}> {
         // console.log(filters.map(filter => (`AND ch1.name = ${filter.characteristic} AND cv1.value IN (${filter.values.map(v => (`"${v}"`))}) \n`))
+        console.log(filters)
         const offset = (filters.page - 1) * limit;
         let filtersSQL = ""
         let ind = 1;
@@ -158,8 +159,26 @@ class ProductService {
             FROM Product p
             INNER JOIN public."productCategory" pc ON pc."ProductId" = p.id
             INNER JOIN Category c ON c.id = pc."CategoryId"
+            ${
+                filters.flower.length > 0 
+                    ? 
+                `INNER JOIN public.composition comp ON p.id = comp."ProductId"
+                INNER JOIN public.item i ON comp."ItemId" = i.id` 
+                    :
+                ''
+            }
+            ${
+                filters.shop.length > 0 
+                    ? 
+                `INNER JOIN public."shopProduct" sp ON p.id = sp."ProductId"
+                INNER JOIN public.shop s ON sp."ShopId" = s.id` 
+                    :
+                ''
+            }
             ${filtersSQL}
             WHERE c.slug = '${categorySlug}'
+            ${filters.flower.length > 0 ? `AND i.slug IN (${filters.flower.map(f => (`'${f}'`))})` : ''}
+            ${filters.shop.length > 0 ? `AND s."titleSlug" IN (${filters.shop.map(s => (`'${s}'`))})` : ''}
             ${priceFilter} 
         )
             SELECT DISTINCT p.id, p.name, p.slug, p.price, p.images[1] as image, tr.total_records
@@ -167,8 +186,26 @@ class ProductService {
             INNER JOIN public."productCategory" pc ON pc."ProductId" = p.id
             INNER JOIN Category c ON c.id = pc."CategoryId"
             ${filtersSQL}
+            ${
+                filters.flower.length > 0 
+                    ? 
+                `INNER JOIN public.composition comp ON p.id = comp."ProductId"
+                INNER JOIN public.item i ON comp."ItemId" = i.id` 
+                    :
+                ''
+            }
+            ${
+                filters.shop.length > 0 
+                    ? 
+                `INNER JOIN public."shopProduct" sp ON p.id = sp."ProductId"
+                INNER JOIN public.shop s ON sp."ShopId" = s.id` 
+                    :
+                ''
+            }
             CROSS JOIN TotalRecords tr
             WHERE c.slug = '${categorySlug}'
+            ${filters.flower.length > 0 ? `AND i.slug IN (${filters.flower.map(f => (`'${f}'`))})` : ''}
+            ${filters.shop.length > 0 ? `AND s."titleSlug" IN (${filters.shop.map(s => (`'${s}'`))})` : ''}
             ${priceFilter} 
             ${sortClause} 
             LIMIT ${limit}
@@ -185,8 +222,9 @@ class ProductService {
 
     async getStartsWith(StartsWith: string){
         const products = await Product.findAll({
+            attributes: ['name', 'slug'],
             where: {
-                name: {[Op.startsWith]: StartsWith}
+                name: {[Op.iLike]: StartsWith + '%'}
             }
         }).catch((e: Error ) => {throw DatabaseError.Conflict(e.message)})
         return products.map(product => ({name: product.name, slug: product.slug}))
@@ -231,7 +269,7 @@ class ProductService {
             id: product.id,
             name: product.name,
             slug: product.slug,
-            images: product.images,
+            image: product.images[0],
             price: product.price,
         }
     }

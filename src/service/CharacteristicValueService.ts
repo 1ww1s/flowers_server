@@ -60,11 +60,13 @@ class CharacteristicValueService {
     async getCharacteristicsByStartsWith(value: string, characteristicName: string): Promise<string[]> {
         const data = await CharacteristicValue.findAll({
             where: {
-                value: {[Op.startsWith]: value}
+                value: {[Op.iLike]: value + '%'}
             },
+            attributes: ['value'],
             include: [
                 {
                     model: Characteristic,
+                    attributes: [],
                     required: true,
                     where: {
                         name: characteristicName

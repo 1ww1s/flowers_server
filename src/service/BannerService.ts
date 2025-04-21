@@ -32,12 +32,13 @@ class BannerService {
 
     async getStartsWith(StartsWith: string){
         const banners = await Banner.findAll({
-         where: {
-            title: {[Op.startsWith]: StartsWith}
-         }
-     }).catch((e: Error ) => {throw DatabaseError.Conflict(e.message)})
-     return banners.map(banner => (banner.title))
- }
+            attributes: ['title'],
+            where: {
+                title: {[Op.iLike]: StartsWith + '%'}
+            }
+        }).catch((e: Error ) => {throw DatabaseError.Conflict(e.message)})
+        return banners.map(banner => (banner.title))
+    }
 }
 
 export const bannerService = new BannerService()

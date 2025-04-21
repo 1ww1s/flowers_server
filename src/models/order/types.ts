@@ -1,11 +1,14 @@
 
-export type TStatus = "Pending" | "Собирается" | "Готов к выдаче" | "Передается курьеру" | "Передан курьеру" | "Выдан" | "Отменен"
+export type TStatus = "pending" | "Собирается" | "Готов к выдаче" | "Передается курьеру" | "Передан курьеру" | "Выдан" | "Отменен"
 export type TMethodPayment = "Банковской картой" | "Системой быстрых платежей" | "При получении"
+export type TM = "spb" | "card" | 'upon receipt'
 export type TMethodOfReceipt =  "Самовывоз" | "Доставка";
 export type TStatusPayment =  "Оплачен" | "Не оплачен"
 
 export interface IOrder {
     id?: number;
+    paymentId: string;
+    // amount: string;
     senderName: string; // отправитель
     senderPhone: string;
     recipientName : string; // получатель
@@ -49,7 +52,6 @@ export interface IOrderRes {
     }
     statusOrder: string;
     statusPayment: string;
-    messageDelivery: string;
 }
 
 export interface IOrderReq {

@@ -37,8 +37,10 @@ export interface IFilters {
         characteristicName: string;
         values: string[]
     }[]
+    flower: string[];
     page: number;
     sort: string;
+    shop: string[]
     price_max: number;
     price_min: number;
 }

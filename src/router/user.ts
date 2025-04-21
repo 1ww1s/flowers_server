@@ -16,10 +16,10 @@ userRouter.post('/login',
     body('password').isLength({min: 6, max: 20}).withMessage('Пароль должен содержать от 6 до 20 символов'),
     userController.login)
 
+userRouter.get('/logout', AuthMiddleware, userController.logout)
+
 userRouter.get('/refresh', userController.refresh)
 userRouter.get('/check', AuthMiddleware, userController.check)
-
-userRouter.post('/order/create', userController.orderCreate)
 
 userRouter.post('/orders/count', AuthMiddleware, userController.ordersCount)
 userRouter.post('/orders', AuthMiddleware, userController.getOrders)

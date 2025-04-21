@@ -2,20 +2,14 @@
 export interface IZone {
     title: string;
     price: number;
-    color: {
-        title: string;
-        value: string;
-    }
+    color: string;
     coords: number[][]
 }
 
 export const zones: IZone[] = [
     {
         title: 'Зона 1',
-        color: {
-            title: '',
-            value: '#00FF0080'
-        },
+        color: '#00FF0080',
         price: 250,
         coords: [
             [56.899478, 35.875898],
@@ -74,10 +68,7 @@ export const zones: IZone[] = [
     },
     {
         title: 'Зона 2',
-        color: {
-            title: '',
-            value: '#d66363'
-        },
+        color: '#d66363',
         price: 450,
         coords: [
            [56.943971, 35.848435],

@@ -6,8 +6,6 @@ import { IBanner, IBasket, IBasketProducts, ICategory, ICategoryCharacteristic, 
 import { productService } from "../service/ProductService";
 import { characteristicService } from "../service/CharacteristicService";
 import { roleService } from "../service/RoleService";
-// import { shopService } from "../service/ShopService";
-// import { shopProductService } from "../service/ShopProductService";
 import { basketService } from "../service/BasketService";
 import { characteristicValueService } from "../service/CharacteristicValueService";
 import { categoryCharacteristicService } from "../service/CategoryCharacteristicService";
@@ -17,6 +15,7 @@ import { shopService } from "../service/ShopService";
 import { bannerService } from "../service/BannerService";
 import { orderService } from "../service/OrderService";
 import { limitOrders } from "../const/limits";
+import { paymentService } from "../service/PaymentService";
 
 class AdminController {
 
@@ -56,6 +55,19 @@ class AdminController {
             next(e)
         }
     }
+
+    async bannerDelete(req: Request<any, any, {id: number}>, res: Response, next: NextFunction){ // по элементно, если пользователь в системе, чтобы знать id
+        try{
+            const {id} = req.body;
+            if(!id) throw RequestError.BadRequest('Нет id баннера')
+            await bannerService.delete(id)
+            res.send({message: 'Баннер удален'})
+        }
+        catch(e){
+            next(e)
+        }
+    }
+
 
     async getBannerStartsWith(req: Request<any, any, {title: string}>, res: Response, next: NextFunction){
         try{
@@ -137,13 +149,25 @@ class AdminController {
         }
     }
 
+    async itemDelete(req: Request<any, any, {id: number}>, res: Response, next: NextFunction){
+        try{
+            const {id} = req.body;
+            if(!id) throw RequestError.BadRequest('Нет id')
+            await itemService.delete(id)
+            res.send({message: 'Единица товара удалена'})
+        }
+        catch(e){
+            next(e)
+        }
+    }
+
     async getItemsStartsWith(req: Request<any, any, {name: string}>, res: Response, next: NextFunction){
         try{
             const {name} = req.body;
             // await new Promise(resolve => setTimeout(resolve, 2000))
-            if(!name) throw RequestError.BadRequest('Нет имени единицы товара')
-            const items = await itemService.getStartsWith(name)
-            res.send(items)
+            if(!name) throw RequestError.BadRequest('Нет названия единицы товара')
+            const names = await itemService.getStartsWith(name)
+            res.send(names)
         }
         catch(e){
             next(e)
@@ -235,8 +259,6 @@ class AdminController {
 
     async productCreate(req: Request<any, any, IProductReq>, res: Response, next: NextFunction){
         try{
-            // console.log(req.body)
-            console.log(req.body)
             const {data, composition, characteristics, shops, categories} = req.body;
             if(!data || !composition || !characteristics || !shops || !categories) throw RequestError.BadRequest('Одно из свойств отсутствует')
             await productService.createAll(data, categories, composition, characteristics, shops)
@@ -330,6 +352,18 @@ class AdminController {
             if(!id) throw RequestError.BadRequest('Нет id')
             await characteristicService.delete(id)
             res.send({message: 'Характеристика для категории удалена'})
+        }
+        catch(e){
+            next(e)
+        }
+    }
+
+    async characteristicStartsWith(req: Request<any, any, {name: string}>, res: Response, next: NextFunction){
+        try{
+            const {name} = req.body;
+            if(!name) throw RequestError.BadRequest('Нет названия характеристики')
+            const names: string[] = await characteristicService.getStartsWith(name)
+            res.send(names)
         }
         catch(e){
             next(e)
@@ -535,11 +569,35 @@ class AdminController {
         }
     }
 
-    async getOrdersCount(req: Request<any, any, {ShopId: number, active: boolean}>, res: Response, next: NextFunction){ // по элементно, если пользователь в системе, чтобы знать id
+    async getOrdersShopCount(req: Request<any, any, {ShopId: number, active: boolean}>, res: Response, next: NextFunction){ // по элементно, если пользователь в системе, чтобы знать id
         try{
             const {ShopId, active} = req.body;
             if(!ShopId || (active === undefined)) throw RequestError.BadRequest('Нет id магазина или переменной "active"')
             const count = await orderService.getCountShop(ShopId, active)
+            res.send({count, totalPage: (count / limitOrders).toFixed()})
+        }
+        catch(e){
+            next(e)
+        }
+    }
+
+    async getOrdersUser(req: Request<any, any, {phone: string, active: boolean, page: number}>, res: Response, next: NextFunction){ // по элементно, если пользователь в системе, чтобы знать id
+        try{
+            const {phone, active, page} = req.body;
+            if(!phone || (active === undefined)) throw RequestError.BadRequest('Нет телефона пользователя или переменной "active"')
+            const orders = await orderService.getUser(phone, active, page || 1, limitOrders)
+            res.send(orders)
+        }
+        catch(e){
+            next(e)
+        }
+    }
+
+    async getOrdersUserCount(req: Request<any, any, {phone: string, active: boolean}>, res: Response, next: NextFunction){ // по элементно, если пользователь в системе, чтобы знать id
+        try{
+            const {phone, active} = req.body;
+            if(!phone || (active === undefined)) throw RequestError.BadRequest('Нет телефона пользователя или переменной "active"')
+            const count = await orderService.getCountUser(phone, active)
             res.send({count, totalPage: (count / limitOrders).toFixed()})
         }
         catch(e){
@@ -552,24 +610,37 @@ class AdminController {
             const {id, status} = req.body;
             if(!id || !status) throw RequestError.BadRequest('Нет id или статуса заказа')
             await orderService.updateStatus(id, status)
-            res.send({message: 'Статус заказа успешно обновлен'})
+            let message = 'Статус заказа успешно обновлен';
+            if(status === 'Отменен'){
+                const order = await orderService.get(id)
+                if (!order) throw DatabaseError.NotFound(`Заказ с id=${id} не найден`)
+                const refund = await paymentService.createFullRefund(order.paymentId)
+                if (refund.status === 'pending'){
+                    throw RequestError.BadRequest('Refund delayed')
+                } else if (refund.status === 'canceled') {
+                    throw RequestError.BadRequest(`${refund.cancellation_details?.party}`)
+                } else{
+                    throw RequestError.BadRequest('Неизвестная ошибка')
+                }
+            }
+            res.send({message})
         }
         catch(e){
             next(e)
         }
     }
 
-    // async shopDelete(req: Request<any, any, {id: number}>, res: Response, next: NextFunction){
-    //     try{
-    //         const {id} = req.body;
-    //         if(!id) throw RequestError.BadRequest('Нет id')
-    //         await shopService.delete(id)
-    //         res.send('Магазин удален')
-    //     }
-    //     catch(e){
-    //         next(e)
-    //     }
-    // }
+    async shopDelete(req: Request<any, any, {id: number}>, res: Response, next: NextFunction){
+        try{
+            const {id} = req.body;
+            if(!id) throw RequestError.BadRequest('Нет id')
+            await shopService.delete(id)
+            res.send({message: 'Магазин удален'})
+        }
+        catch(e){
+            next(e)
+        }
+    }
     
 
     // // ShopProduct

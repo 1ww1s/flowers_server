@@ -1,9 +1,17 @@
 import slugify from "slugify";
 import { DatabaseError } from "../error/DatabaseError";
-import { Category, Characteristic, CharacteristicValue, Product } from "../models";
-import { Op, QueryTypes, Sequelize } from "sequelize";
+import { Category, Characteristic, CharacteristicValue, Item, Product } from "../models";
+import { Op, QueryTypes } from "sequelize";
 
-type TResFilter = {characteristicName: string, values: {name: string, count: number}[]}[]
+export type TResFilter = {
+    characteristicName: string;
+    characteristicSlug: string; 
+    values: {
+        name: string; 
+        slug: string;
+        count: number
+    }[]
+};
 
 class CategoryService {
 
@@ -21,6 +29,37 @@ class CategoryService {
         ).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})
     }    
 
+    async getFlowers(slug: string){
+        type TRes = {name: string, slug: string, productCount: number}[]
+        const sqlQuery = `
+            SELECT 
+                i.name,
+                i.slug,
+                COUNT(DISTINCT p.id) AS "productCount"
+            FROM public.item i
+            JOIN public.composition c ON i.id = c."ItemId"
+            JOIN public.product p ON c."ProductId" = p.id
+            JOIN public."productCategory" pc ON p.id = pc."ProductId"  -- связь многие-ко-многим
+            JOIN public.category cat ON pc."CategoryId" = cat.id
+            WHERE cat.slug = '${slug}'
+            GROUP BY i.id
+        `
+        const data: any = await Item.sequelize?.query(
+            sqlQuery, {type: QueryTypes.SELECT}
+        ).catch((e: Error) => {throw DatabaseError.Conflict(e.message)});
+        if(!data) throw DatabaseError.NotFound(`Не найдена категория с slug=${slug}`)
+        const characteristicData: TRes = data;
+        const characteristicNames: TResFilter = {
+            characteristicName: 'Цветы',
+            characteristicSlug: 'flower',
+            values: characteristicData.map(data => ({
+                name: data.name,
+                slug: data.slug,
+                count: data.productCount
+            }))  
+        }
+        return characteristicNames
+    }
 
     async getFilter(slug: string){
         type TRes = (Characteristic & {CharacteristicValues: (CharacteristicValue & {Products: Product[]})[]})[]
@@ -47,7 +86,7 @@ class CategoryService {
             ],
         }).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})
         const characteristicData: TRes = data;
-        const characteristicNames: TResFilter = characteristicData.map(cd => ({
+        const characteristicNames: TResFilter[] = characteristicData.map(cd => ({
             characteristicName: cd.name,
             characteristicSlug: cd.slug, 
             values: cd.CharacteristicValues.map(cv=> ({name: cv.value, slug: cv.slug, count: cv.Products.length}))
@@ -114,8 +153,9 @@ class CategoryService {
 
     async getStartsWith(StartsWith: string){
            const categories = await Category.findAll({
+            attributes: ['name'],
             where: {
-                name: {[Op.startsWith]: StartsWith}
+                name: {[Op.iLike]: StartsWith + '%'}
             }
         }).catch((e: Error ) => {throw DatabaseError.Conflict(e.message)})
         return categories.map(category => (category.name))

@@ -16,6 +16,10 @@ class ItemService {
         return await Item.update({name, slug}, {where: {id}}).catch((e: Error ) => {throw DatabaseError.Conflict(e.message)})
     }
 
+    async delete(id: number){
+        return await Item.destroy({where: {id}}).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})
+    }
+
     async getAll(){
         const flowersData = await Item.findAll().catch((e: Error ) => {throw DatabaseError.Conflict(e.message)})
         return flowersData.map(flower => ({id: flower.id, name: flower.name}))
@@ -23,11 +27,12 @@ class ItemService {
 
     async getStartsWith(StartsWith: string){
         const items = await Item.findAll({
+            attributes: ['name'],
             where: {
-                name: {[Op.startsWith]: StartsWith}
+                name: {[Op.iLike]: StartsWith + '%'}
             }
         }).catch((e: Error ) => {throw DatabaseError.Conflict(e.message)})
-        return items.map(item => ({id: item.id, name: item.name}))
+        return items.map(item => item.name)
     }
 
     async getById(id: number){
@@ -36,6 +41,10 @@ class ItemService {
 
     async getByName(name: string){
         return await Item.findOne({where: {name}}).catch((e: Error ) => {throw DatabaseError.Conflict(e.message)})
+    }
+
+    async getBySlug(slug: string){
+        return await Item.findOne({where: {slug}}).catch((e: Error ) => {throw DatabaseError.Conflict(e.message)})
     }
 }
 

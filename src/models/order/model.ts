@@ -4,7 +4,7 @@ import { IOrder, TMethodOfReceipt, TMethodPayment, TStatus, TStatusPayment } fro
 
 
 @Table({
-    timestamps: false,
+    timestamps: true,
     tableName: 'order',
   })
 class Order extends Model<IOrder> implements IOrder {
@@ -21,6 +21,18 @@ class Order extends Model<IOrder> implements IOrder {
       allowNull: false,
     })
     senderName!: string;
+
+    // @Column({
+    //   type: DataType.STRING(20),
+    //   allowNull: false,
+    // })
+    // amount!: string;
+
+    @Column({
+      type: DataType.STRING,
+      allowNull: false,
+    })
+    paymentId!: string;
 
     @Column({
       type: DataType.STRING(100),

@@ -88,8 +88,9 @@ class UserService {
 
     async getStartsWith(StartsWith: string){
         const users = await User.findAll({
+            attributes: ['name', 'phone'],
             where: {
-                phone: {[Op.startsWith]: StartsWith}
+                phone: {[Op.iLike]: StartsWith + '%'}
             }
         }).catch((e: Error ) => {throw DatabaseError.Conflict(e.message)})
         return users.map(user => ({name: user.name, phone: user.phone}))

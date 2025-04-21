@@ -10,15 +10,17 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^22.9.0",
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.14.1",
+    "@types/uuid": "^10.0.0",
     "@types/validator": "^13.12.2",
-    "typescript": "^5.6.3"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
   },
   "dependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1.4.7",
     "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/payment": "^2.1.7",
     "axios": "^1.8.4",
@@ -26,16 +28,18 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.21.1",
+    "express": "^5.1.0",
     "express-validator": "^7.2.1",
     "jsonwebtoken": "^9.0.2",
     "nodemon": "^3.1.7",
     "payment": "^2.4.7",
     "pg": "^8.13.1",
     "reflect-metadata": "^0.2.2",
+    "rendertron-middleware": "^0.1.5",
     "sequelize": "^6.37.5",
     "sequelize-typescript": "^2.1.6",
-    "slugify": "^1.6.6"
+    "slugify": "^1.6.6",
+    "uuid": "^11.1.0"
   },
   "keywords": [],
   "description": ""

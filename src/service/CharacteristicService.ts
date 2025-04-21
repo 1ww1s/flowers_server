@@ -1,6 +1,7 @@
 import slugify from "slugify"
 import { DatabaseError } from "../error/DatabaseError"
 import { Characteristic } from "../models"
+import { Op } from "sequelize"
 
 
 
@@ -40,6 +41,17 @@ class CharacteristicService {
 
     async getAll() {
         return await Characteristic.findAll().catch((e: Error) => {throw DatabaseError.Conflict(e.message)})
+    }
+
+    
+    async getStartsWith(StartsWith: string){
+        const characteristics = await Characteristic.findAll({
+            attributes: ['name'],
+            where: {
+                name: {[Op.iLike]: StartsWith + '%'}
+            }
+        }).catch((e: Error ) => {throw DatabaseError.Conflict(e.message)})
+        return characteristics.map(characteristic => characteristic.name)
     }
 }
 

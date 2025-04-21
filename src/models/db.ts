@@ -23,10 +23,10 @@ import { Banner } from './banner/model';
 
 
 export const connection = new Sequelize({
-    database: 'flowers',
+    database: process.env.POSTGRES_NAME,
     dialect: 'postgres',
-    username: 'postgres',
-    password: 'postgres',
+    username: process.env.POSTGRES_USER,
+    password: process.env.POSTGRES_PASSWORD,
     storage: ':memory:',
     models: [Category, Product, Basket, User, RefreshToken, UserRole, CharacteristicValue, Shop, ShopProduct, ProductCategory,
         Role, Order, Composition, Item, Characteristic, ProductCharacteristicValue, Detail, CategoryCharacteristic, Banner],
