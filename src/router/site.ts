@@ -40,6 +40,6 @@ siteRouter.get('/order/:id', AuthMiddleware, siteController.getOrder)
 
 siteRouter.post('/order/create', siteController.orderCreate)
 
-siteRouter.get('/zones', AuthMiddleware, siteController.getZones)
+siteRouter.get('/zones', siteController.getZones)
 
 export {siteRouter}
