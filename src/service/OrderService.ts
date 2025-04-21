@@ -2,7 +2,7 @@ import { Op } from "sequelize";
 import { zones } from "../const/zones";
 import { DatabaseError } from "../error/DatabaseError";
 import { RequestError } from "../error/RequestError";
-import { Detail, IDetail, Order } from "../models";
+import { Detail, IDetail, Order, TAllTime } from "../models";
 import { IOrderItem, IOrderReq, IOrderRes, TMethodOfReceipt, TMethodPayment, TStatus, TStatusPayment } from "../models/order/types";
 import { detailService } from "./DetailService";
 import { productService } from "./ProductService";
@@ -38,8 +38,47 @@ class OrderService {
         ).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})   
     }
 
+    async validationTime(shopId: number): Promise<boolean> {
+        const now = new Date();
+        const currentHours = now.getHours();
+        const currentMinutes = now.getMinutes();
+    
+        const shop = await shopService.getById(shopId)
+        if(!shop) throw DatabaseError.NotFound(`Магазин с id=${shopId} не найден`) 
+        const allTime: TAllTime = '24 часа';
+        if(shop.openingHours === allTime){
+            return true
+        }
+
+        // Разбираем время работы магазина
+        const parseTime = (timeStr: string) => {
+            const [hoursStr, minutesStr] = timeStr.split(':');
+            return {
+                hours: parseInt(hoursStr, 10),
+                minutes: parseInt(minutesStr, 10),
+            };
+        };
+
+        const [openingTime, closingTime] = shop.openingHours.split(' - ')
+    
+        const openTime = parseTime(openingTime);
+        const closeTime = parseTime(closingTime);
+    
+        // Текущее время в минутах для удобства сравнения
+        const currentTotalMinutes = currentHours * 60 + currentMinutes;
+        const openTotalMinutes = openTime.hours * 60 + openTime.minutes;
+        const closeTotalMinutes = closeTime.hours * 60 + closeTime.minutes;
+    
+        // Проверяем, что текущее время внутри интервала [openTime, closeTime]
+        return (
+            (currentTotalMinutes >= openTotalMinutes) && (currentTotalMinutes <= closeTotalMinutes)
+        );
+    }
+
     async createOrder(order: IOrderReq): Promise<string> {
         const methodPayment = order.methodPayment === 'Банковской картой' ? 'bank_card' : 'bank_card'
+        const validationOpeningHours = await this.validationTime(order.shopId)
+        if(!validationOpeningHours) throw RequestError.BadRequest('Магазин закрыт или не может оформить заказ')
         if(order.methodOfReceipt === 'Доставка') {
             const coords = await yandexMapService.getCoordinates(order.address.street)
             if(!coords) {

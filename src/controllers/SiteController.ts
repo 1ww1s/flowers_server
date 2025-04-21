@@ -18,25 +18,6 @@ import { characteristicService } from "../service/CharacteristicService";
 
 
 class SiteController {
-
-    
-    async getShopTime(req: Request<any, any, {slug: string}>, res: Response, next: NextFunction){
-        try{
-            const {slug} = req.body;
-            const shopData = await shopService.getBySlug(slug)
-            const shopDate = shopData.openingHours 
-            
-            const timeNow: Date = new Date()
-            res.send(timeNow.toLocaleString('ru', {
-                hour: 'numeric',
-                minute: '2-digit'
-            }))
-        }
-        catch(e){
-            next(e)
-        }
-    }
-
     // zone
 
     async getZones(_: Request, res: Response, next: NextFunction){
@@ -55,8 +36,6 @@ class SiteController {
             const {order} = req.body;
             if(!order) throw RequestError.BadRequest('Нет объекта заказа')
             const paymentUrl = await orderService.createOrder(order)
-            if(!paymentUrl)  
-                throw RequestError.BadRequest('Заказ не был оформлен (данный формат оформления заказа не поддерживается)')
             res.json({ paymentUrl });
         }
         catch(e){
