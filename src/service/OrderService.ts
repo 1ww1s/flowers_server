@@ -100,7 +100,7 @@ class OrderService {
                 getAddressFormat(order.address), order.address.message, minPrice, order.shopId, order.message, order.methodOfReceipt, order.methodPayment)
             const {productsPrice, receiptDetail} = await this.productsCreate(order.products, order.shopId, orderData.id)
 
-            let url = ''
+            let url = `${process.env.CLIENT_URL}/catalog`
             if(order.methodPayment !== 'При получении'){
                 receiptDetail.push({
                     description: 'Доставка',
@@ -118,7 +118,7 @@ class OrderService {
             const orderData = await this.create('', order.senderName, order.senderPhone, order.recipientName, order.recipientPhone, '', order.address.message, 0, order.shopId, order.message, order.methodOfReceipt,  order.methodPayment)
             const {productsPrice, receiptDetail} = await this.productsCreate(order.products, order.shopId, orderData.id)
             
-            let url = ''
+            let url = `${process.env.CLIENT_URL}/catalog`
             if(order.methodPayment !== 'При получении'){
                 const data = await paymentService.create(`${productsPrice}`, `Оплата заказа №${orderData.id}`, methodPayment, receiptDetail, order.senderPhone)
                 await Order.update({paymentId: data.id}, {where: {id: orderData.id}}).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})   

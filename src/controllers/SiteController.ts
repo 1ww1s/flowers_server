@@ -15,6 +15,7 @@ import { AuthError } from "../error/AuthError";
 import { zones } from "../const/zones";
 import { DatabaseError } from "../error/DatabaseError";
 import { characteristicService } from "../service/CharacteristicService";
+import { limitProducts } from "../const/limits";
 
 
 class SiteController {
@@ -174,7 +175,7 @@ class SiteController {
             const slug: string = req.params.slug
             const {filters} = req.body;
             // console.log(filters)
-            const {products, totalPages} = await productService.getProductsByCategotyAndFilters(1, slug, filters)
+            const {products, totalPages} = await productService.getProductsByCategotyAndFilters(limitProducts, slug, filters)
             const response = {
                 products: products.map(p => ({...p, id: `${p.id}`, price: `${p.price}`})),
                 totalPages
