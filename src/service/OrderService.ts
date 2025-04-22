@@ -32,7 +32,7 @@ class OrderService {
     ) {
         return await Order.create(
             {
-                senderName, senderPhone, recipientName, recipientPhone, address, ShopId, paymentId, statusOrder: 'pending', 
+                senderName, senderPhone, recipientName, recipientPhone, address, ShopId, paymentId, statusOrder: methodOfReceipt === 'Самовывоз' ? 'Собирается' : 'pending', 
                 deliveryMessage, deliveryPrice, statusPayment: 'Не оплачен', message, methodOfReceipt, methodPayment
             }
         ).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})   
@@ -76,7 +76,7 @@ class OrderService {
     }
 
     async createOrder(order: IOrderReq): Promise<string> {
-        const methodPayment = order.methodPayment === 'Банковской картой' ? 'bank_card' : 'bank_card'
+        const methodPayment = order.methodPayment === 'Банковской картой' ? 'bank_card' : 'bank_card'; // метод оплаты ЮКасса
         const validationOpeningHours = await this.validationTime(order.shopId)
         if(!validationOpeningHours) throw RequestError.BadRequest('Магазин закрыт или не может оформить заказ')
         if(order.methodOfReceipt === 'Доставка') {
