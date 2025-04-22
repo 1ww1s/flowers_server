@@ -23,7 +23,6 @@ adminRouter.post('/characteristic/update', adminController.characteristicUpdate)
 adminRouter.post('/characteristic/delete',  CheckRolesMiddleware(['admin']), adminController.characteristicDelete)
 adminRouter.post('/characteristic/getStartsWith', adminController.characteristicStartsWith)
 
-
 adminRouter.post('/characteristicValue/create', adminController.characteristicValueCreate)
 adminRouter.post('/characteristicValue/update', adminController.characteristicValueUpdate)
 adminRouter.post('/characteristicValue/delete', adminController.characteristicValueDelete)

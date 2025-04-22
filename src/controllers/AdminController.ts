@@ -623,8 +623,8 @@ class AdminController {
                     throw RequestError.BadRequest('Refund delayed')
                 } else if (refund.status === 'canceled') {
                     throw RequestError.BadRequest(`${refund.cancellation_details?.party}`)
-                } else{
-                    throw RequestError.BadRequest('Неизвестная ошибка')
+                } else if (refund.status === 'failed') {
+                    throw RequestError.BadRequest(`Неизвестная ошибка`)
                 }
             }
             res.send({message})

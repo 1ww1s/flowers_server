@@ -172,10 +172,9 @@ class SiteController {
     async getProductsByCategory(req: Request<{slug: string}, any, {filters: IFilters}>, res: Response, next: NextFunction){
         try{
             const slug: string = req.params.slug
-            // await new Promise(resolve => setTimeout(resolve, 1000))
             const {filters} = req.body;
             // console.log(filters)
-            const {products, totalPages} = await productService.getProductsByCategotyAndFilters(2, slug, filters)
+            const {products, totalPages} = await productService.getProductsByCategotyAndFilters(1, slug, filters)
             const response = {
                 products: products.map(p => ({...p, id: `${p.id}`, price: `${p.price}`})),
                 totalPages
