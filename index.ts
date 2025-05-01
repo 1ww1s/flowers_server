@@ -9,7 +9,7 @@ import parser from 'cookie-parser'
 
 const app = express()
 
-const port = process.env.PORT_SERVER || 5000;
+const port = process.env.PORT_SERVER || 5500;
 
 app.use(cors({
     credentials: true,
