@@ -29,7 +29,7 @@ class Basket extends Model<IBasket> implements IBasket {
       type: DataType.INTEGER,
       allowNull: false
     })
-    UserId!: number;
+    MyUserId!: number;
 }
 
 export {Basket}

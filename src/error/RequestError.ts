@@ -1,9 +1,4 @@
 
-interface IRequestError {
-    status: number;
-    message: string;
-}
-
 
 export class RequestError extends Error {
     status
@@ -17,5 +12,7 @@ export class RequestError extends Error {
         return new RequestError(400, message)
     }
 
-
+    static Timeout(message?: string){
+        return new RequestError(408, message || 'Истекло время ожидания')
+    }
 }

@@ -1,19 +1,24 @@
 import { Column, DataType, Model, Table } from "sequelize-typescript";
-import { IUser } from "./types";
+import { IMyUser } from "./types";
 
 
 
 @Table({
     timestamps: false,
-    tableName: 'user',
+    tableName: 'myUser',
   })
-class User extends Model<IUser> implements IUser {
+class MyUser extends Model<IMyUser> implements IMyUser {
     @Column({
       type: DataType.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     })
     id!: number;
+
+    @Column({
+      type: DataType.STRING,
+    })
+    vk_id!: string;
   
     @Column({
       type: DataType.STRING,
@@ -29,9 +34,8 @@ class User extends Model<IUser> implements IUser {
   
     @Column({
       type: DataType.STRING,
-      allowNull: false,
     })
     password!: string;
 }
 
-export {User}
+export {MyUser}

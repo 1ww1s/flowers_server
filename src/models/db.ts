@@ -4,7 +4,7 @@ import { Composition } from './composition/model';
 import { Item } from './item/model';
 import { Category } from './category/model';
 import { Basket } from './basket/model';
-import { User } from './user/model';
+import { MyUser } from './user/model';
 import { RefreshToken } from './refreshToken/model';
 import { Role } from './role/model';
 import { UserRole } from './userRole/model';
@@ -28,6 +28,6 @@ export const connection = new Sequelize({
     username: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
     storage: ':memory:',
-    models: [Category, Product, Basket, User, RefreshToken, UserRole, CharacteristicValue, Shop, ShopProduct, ProductCategory,
+    models: [Category, Product, Basket, MyUser, RefreshToken, UserRole, CharacteristicValue, Shop, ShopProduct, ProductCategory,
         Role, Order, Composition, Item, Characteristic, ProductCharacteristicValue, Detail, CategoryCharacteristic, Banner],
 });

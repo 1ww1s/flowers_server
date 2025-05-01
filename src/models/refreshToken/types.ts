@@ -1,5 +1,5 @@
 export interface IRefreshToken {
     id?: number;
-    UserId: number;
+    MyUserId: number;
     token: string;
 }

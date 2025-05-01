@@ -14,15 +14,19 @@ const port = process.env.PORT_SERVER || 5000;
 app.use(cors({
     credentials: true,
     maxAge: 24 * 60 * 60,  // 24h
-    origin: [process.env.CLIENT_URL || '', process.env.PROXY_URL || '', 'https://yookassa.ru'],
+    origin: [
+        'http://localhost', 
+        process.env.PROXY_URL || '', 
+        'https://yookassa.ru',
+        'https://oauth.vk.com', // Добавляем домен VK OAuth
+        'https://id.vk.com'     // Новый домен авторизации VK
+    ],
 }))
 
-app.use(express.json({limit: '50mb'}))
+app.use(express.json({limit: '20mb'}))
 app.use(parser())
 app.use('/api', router)
 app.use(error)
-
-// app.use('/api/payment', paymentRouter)
 
 const start = async () => {
     await connection.authenticate()

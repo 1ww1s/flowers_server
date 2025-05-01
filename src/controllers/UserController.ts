@@ -1,5 +1,4 @@
 import { CookieOptions, NextFunction, Request, Response } from "express";
-import { IUserAuth, IUser } from "../models";
 import { RequestError } from "../error/RequestError";
 import { userService } from "../service/UserService";
 import { AuthError } from "../error/AuthError";
@@ -10,6 +9,7 @@ import { IOrderReq } from "../models/order/types";
 import { orderService } from "../service/OrderService";
 import { limitOrders } from "../const/limits";
 import { tokenService } from "../service/TokenService";
+import { IMyUser, IMyUserAuth } from "../models";
 
 const cookieOptions: CookieOptions = {
     maxAge: 1 * 365 * 24 * 60 * 60 * 1000,
@@ -20,7 +20,7 @@ const cookieOptions: CookieOptions = {
 
 class UserController {
 
-    async registration(req: Request<never, never, IUser, never>, res: Response, next: NextFunction){
+    async registration(req: Request<never, never, IMyUser, never>, res: Response, next: NextFunction){
         try{
             const errors = validationResult(req)
             if(!errors.isEmpty()){
@@ -37,7 +37,7 @@ class UserController {
         }
     }
 
-    async login(req: Request<never, never, IUserAuth, never>, res: Response, next: NextFunction){
+    async login(req: Request<never, never, IMyUserAuth, never>, res: Response, next: NextFunction){
         try{
             const errors = validationResult(req)
             if(!errors.isEmpty()){
@@ -46,7 +46,6 @@ class UserController {
             const {phone, password} = req.body;
             if(!phone || !password) throw RequestError.BadRequest('Нет email или пароля')
             const {userRes, access, refresh} = await userService.login(phone, password)
-            console.log(refresh)
             res.cookie('token', refresh, cookieOptions)
             res.json({user: userRes, accessToken: access})
         }
@@ -55,9 +54,22 @@ class UserController {
         }
     }
 
+    async vk_login(req: Request<any, any, {code: string, code_verifier: string, device_id: string, state: string}>, res: Response, next: NextFunction) {
+        try{
+            const { code, code_verifier, device_id, state } = req.body;
+            if(!code || !code_verifier || !device_id || !state) throw RequestError.BadRequest('Одного из параметров (code, code_verifier, device_id, state) нет')
+            const {userRes, access, refresh} = await userService.vk_login(code, code_verifier, device_id, state)
+            res.cookie('token', refresh, cookieOptions)
+            res.json({user: userRes, accessToken: access})
+        }
+        catch(e){
+            next(e)
+        }
+      }
+
     async logout(req: Request, res: Response, next: NextFunction){
         try{
-            const user = req.user;
+            const user = req.myUser;
             if(!user){
                 throw AuthError.UnauthorizedError()
             }
@@ -89,7 +101,7 @@ class UserController {
 
     async check(req: Request, res: Response, next: NextFunction){
         try{
-            const user = req.user;
+            const user = req.myUser;
             if(!user) throw AuthError.UnauthorizedError()
                 res.send({user})
         }
@@ -101,7 +113,7 @@ class UserController {
     async ordersCount(req: Request<never, never, {active: boolean}>, res: Response, next: NextFunction){
         try{
             const {active} = req.body;
-            const user = req.user;
+            const user = req.myUser;
             if(!user) throw AuthError.UnauthorizedError()
             if(active === undefined) throw RequestError.BadRequest('Не указано значение active')
             const count = await orderService.getCountUser(user.phone, active)
@@ -114,7 +126,7 @@ class UserController {
 
     async basketAdd(req: Request<any, any, {item: {id: number, count: number}}>, res: Response, next: NextFunction){
         try{
-            const user = req.user;
+            const user = req.myUser;
             if(!user) throw AuthError.UnauthorizedError()
             const {item} = req.body;
             const userData = await userService.get(user.phone)
@@ -129,7 +141,7 @@ class UserController {
 
     async basketDelete(req: Request<any, any, {ProductId: number}>, res: Response, next: NextFunction){
         try{
-            const user = req.user;
+            const user = req.myUser;
             if(!user) throw AuthError.UnauthorizedError()
             const {ProductId} = req.body;
             const userData = await userService.get(user.phone)
@@ -146,7 +158,7 @@ class UserController {
 
     async basketGetAll(req: Request, res: Response, next: NextFunction){
         try{
-            const user = req.user;
+            const user = req.myUser;
             if(!user) throw AuthError.UnauthorizedError()
             const userData = await userService.get(user.phone)
             const basket = await basketService.getAllByUser(userData.id)
@@ -159,7 +171,7 @@ class UserController {
 
     async basketCountUpdate(req: Request<any, any, {productId: number, count: number}>, res: Response, next: NextFunction){
         try{
-            const user = req.user;
+            const user = req.myUser;
             if(!user) throw AuthError.UnauthorizedError()
             const {productId, count} = req.body;
             const userData = await userService.get(user.phone)
@@ -176,7 +188,7 @@ class UserController {
 
     async getOrders(req: Request<any, any, {active: boolean, page: number}>, res: Response, next: NextFunction){ // по элементно, если пользователь в системе, чтобы знать id
         try{
-            const user = req.user;
+            const user = req.myUser;
             if(!user) throw AuthError.UnauthorizedError()
             const {active, page} = req.body;
             if (active === undefined) throw RequestError.BadRequest('Не указано значение active')
@@ -190,7 +202,7 @@ class UserController {
 
     async basketAddItems(req: Request<any, any, {basket: {id: number, count: number}[]}>, res: Response, next: NextFunction){
         try{
-            const user = req.user;
+            const user = req.myUser;
             if(!user) throw AuthError.UnauthorizedError()
             const {basket} = req.body;
             const userData = await userService.get(user.phone)

@@ -17,7 +17,6 @@ import { DatabaseError } from "../error/DatabaseError";
 import { characteristicService } from "../service/CharacteristicService";
 import { limitProducts } from "../const/limits";
 
-
 class SiteController {
     // zone
 
@@ -190,7 +189,7 @@ class SiteController {
     async getOrder(req: Request<{id: string}>, res: Response, next: NextFunction){
         try{
             const id: string = req.params.id
-            const user = req.user;
+            const user = req.myUser;
             if(!user) throw AuthError.UnauthorizedError()
             const order = await orderService.getFull(+id)
             const access = user.roles.includes('admin') // роли, у которых есть доступ к любым заказам
@@ -317,7 +316,8 @@ class SiteController {
                 title: data.title,
                 sign: data.sign,
                 buttonLink: data.buttonLink,
-                image: data.image
+                imageDesctop: data.imageDesctop,
+                imageMobile: data.imageMobile,
             }))
             res.send(banners)
         }

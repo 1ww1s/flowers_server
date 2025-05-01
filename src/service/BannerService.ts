@@ -1,21 +1,18 @@
-
-
 import { Op } from "sequelize"
 import { DatabaseError } from "../error/DatabaseError"
 import { Banner } from "../models"
 
-
 class BannerService {
-    async create(title: string, sign: string, image: string, buttonLink: string){
-        return await Banner.create({title, sign, image, buttonLink}).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})
+    async create(title: string, sign: string, imageDesctop: string, imageMobile: string, buttonLink: string){
+        return await Banner.create({title, sign, imageDesctop, imageMobile, buttonLink}).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})
     }
 
     async delete(id: number){
         return await Banner.destroy({where: {id}}).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})
     }
 
-    async update(id: number, title: string, sign: string, image: string, buttonLink: string){
-        return await Banner.update({title, sign, image, buttonLink}, {where: {id}}).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})
+    async update(id: number, title: string, sign: string, imageDesctop: string, imageMobile: string, buttonLink: string){
+        return await Banner.update({title, sign, imageDesctop, imageMobile, buttonLink}, {where: {id}}).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})
     }
 
     async getByTitle(title: string){

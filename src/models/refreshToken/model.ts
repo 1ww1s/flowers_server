@@ -25,7 +25,7 @@ class RefreshToken extends Model<IRefreshToken> implements IRefreshToken {
       type: DataType.INTEGER,
       allowNull: false
     })
-    UserId!: number;
+    MyUserId!: number;
 }
 
 export {RefreshToken}

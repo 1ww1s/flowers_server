@@ -22,9 +22,9 @@ class AdminController {
     // Basket
     async basketCreate(req: Request<any, any, IBasket>, res: Response, next: NextFunction){ // по элементно, если пользователь в системе, чтобы знать id
         try{
-            const {ProductId, UserId, count = 1} = req.body;
-            if(!ProductId || !UserId) throw RequestError.BadRequest('Одно из свойств отсутствует')
-            await basketService.create(ProductId, UserId, count)
+            const {ProductId, MyUserId, count = 1} = req.body;
+            if(!ProductId || !MyUserId) throw RequestError.BadRequest('Одно из свойств отсутствует')
+            await basketService.create(ProductId, MyUserId, count)
             res.send({message: 'Товар добавлен в корзину'})
         }
         catch(e){
@@ -32,11 +32,13 @@ class AdminController {
         }
     }
 
+    // Banner
+
     async bannerCreate(req: Request<any, any, IBanner>, res: Response, next: NextFunction){ // по элементно, если пользователь в системе, чтобы знать id
         try{
-            const {title, sign, buttonLink, image} = req.body;
-            if(!title || !buttonLink || !image) throw RequestError.BadRequest('Одно из свойств отсутствует')
-            await bannerService.create(title, 'sign', image, buttonLink)
+            const {title, sign, buttonLink, imageDesctop, imageMobile} = req.body;
+            if(!title || !buttonLink || !imageDesctop || !imageMobile) throw RequestError.BadRequest('Одно из свойств отсутствует')
+            await bannerService.create(title, '', imageDesctop, imageMobile, buttonLink)
             res.send({message: 'Баннер создан'})
         }
         catch(e){
@@ -46,9 +48,9 @@ class AdminController {
 
     async bannerUpdate(req: Request<any, any, IBanner>, res: Response, next: NextFunction){ // по элементно, если пользователь в системе, чтобы знать id
         try{
-            const {id, title, sign, buttonLink, image} = req.body;
-            if(!id || !title || !sign || !buttonLink || !image) throw RequestError.BadRequest('Одно из свойств отсутствует')
-            await bannerService.update(id, title, sign, image, buttonLink)
+            const {id, title, sign, buttonLink, imageDesctop, imageMobile} = req.body;
+            if(!id || !title || !buttonLink || !imageDesctop || !imageMobile) throw RequestError.BadRequest('Одно из свойств отсутствует')
+            await bannerService.update(id, title, '', imageDesctop, imageMobile, buttonLink)
             res.send({message: 'Баннер обнавлен'})
         }
         catch(e){
@@ -67,7 +69,6 @@ class AdminController {
             next(e)
         }
     }
-
 
     async getBannerStartsWith(req: Request<any, any, {title: string}>, res: Response, next: NextFunction){
         try{
@@ -90,7 +91,8 @@ class AdminController {
                 id: bannerData.id,
                 title: bannerData.title,
                 sign: bannerData.sign,
-                image: bannerData.image,
+                imageDesctop: bannerData.imageDesctop,
+                imageMobile: bannerData.imageMobile,
                 buttonLink: bannerData.buttonLink
             }
             res.send(banner)

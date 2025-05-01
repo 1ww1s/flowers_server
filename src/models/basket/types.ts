@@ -1,7 +1,7 @@
 export interface IBasket {
     id?: number;
     count: number;
-    UserId: number;
+    MyUserId: number;
     ProductId: number;
 }
 

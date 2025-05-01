@@ -20,8 +20,9 @@ class RoleService {
         ).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})
     }
 
-    async getUserRoles(UserId: number){
-        const userRoleData = await UserRole.findAll({where: {UserId}}).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})
+    async getUserRoles(MyUserId: number){
+        console.log(MyUserId)
+        const userRoleData = await UserRole.findAll({where: {MyUserId}}).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})
         const roles = await Promise.all(
             userRoleData.map(async userRole => {
                 const role = await Role.findOne({where: {id: userRole.RoleId}}).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})

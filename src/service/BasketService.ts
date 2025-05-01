@@ -3,10 +3,10 @@ import { Basket, IBasketProducts, Product } from "../models"
 
 
 class BasketService {
-    async create(ProductId: number, UserId: number, count: number){
+    async create(ProductId: number, MyUserId: number, count: number){
         const product = await Product.findOne({where: {id: ProductId}})
         if(!product) return ProductId 
-        await Basket.create({ProductId, UserId, count}).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})
+        await Basket.create({ProductId, MyUserId, count}).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})
         return null
     }
 
@@ -18,15 +18,15 @@ class BasketService {
         return await Basket.update({count}, {where: {id}}).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})
     }
 
-    async get(UserId: number, ProductId: number){
+    async get(MyUserId: number, ProductId: number){
         return await Basket.findOne(
-            {where: {UserId, ProductId}}
+            {where: {MyUserId, ProductId}}
         ).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})
     }
 
-    async getAllByUser(UserId: number){
+    async getAllByUser(MyUserId: number){
         const basketData = await Basket.findAll(
-            {where: {UserId}}
+            {where: {MyUserId}}
         ).catch((e: Error) => {throw DatabaseError.Conflict(e.message)})
         return basketData.map( basketItem => ({
             id: basketItem.ProductId,
@@ -34,14 +34,14 @@ class BasketService {
         }))
     }
 
-    async updateAll(UserId: number, products: IBasketProducts['products']){
+    async updateAll(MyUserId: number, products: IBasketProducts['products']){
         await Promise.all(products.map(async product => {
-            const basketItem = await Basket.findOne({where: {UserId, ProductId: product.ProductId}})
+            const basketItem = await Basket.findOne({where: {MyUserId, ProductId: product.ProductId}})
             if(basketItem && basketItem.count !== product.count){
                 await this.update(basketItem?.id, product.count)
             }
             if(!basketItem){
-                await this.create(product.ProductId, UserId, product.count)
+                await this.create(product.ProductId, MyUserId, product.count)
             }
         }))    
     }

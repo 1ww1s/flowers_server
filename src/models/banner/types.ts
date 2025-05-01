@@ -5,6 +5,7 @@ export interface IBanner {
     id?: number;
     title: string;
     sign: string;
-    image: string;
+    imageDesctop: string;
+    imageMobile: string;
     buttonLink: string;
 }

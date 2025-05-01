@@ -19,7 +19,7 @@ class UserRole extends Model<IUserRole> implements IUserRole {
       type: DataType.INTEGER,
       allowNull: false
     })
-    UserId!: number;
+    MyUserId!: number;
 
     @Column({
       type: DataType.INTEGER,

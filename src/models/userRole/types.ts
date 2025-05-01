@@ -1,5 +1,5 @@
 export interface IUserRole {
     id?: number;
-    UserId: number;
+    MyUserId: number;
     RoleId: number;
 }

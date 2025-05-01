@@ -17,8 +17,14 @@ class Banner extends Model<IBanner> implements IBanner {
       type: DataType.STRING(5242880),  // 5mb
       allowNull: false,
     })
-    image!: string;
-
+    imageMobile!: string;
+    
+    @Column({
+      type: DataType.STRING(5242880),  // 5mb
+      allowNull: false,
+    })
+    imageDesctop!: string;
+    
     @Column({
         type: DataType.STRING(100),
         allowNull: false,

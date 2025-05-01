@@ -15,7 +15,7 @@ import { RefreshToken } from "./refreshToken/model";
 import { Role } from "./role/model";
 import { Shop } from "./shop/model";
 import { ShopProduct } from "./shopProduct/model";
-import { User } from "./user/model";
+import { MyUser } from "./user/model";
 import { UserRole } from "./userRole/model";
 import { ProductCategory } from "./productCategory/model";
 
@@ -35,11 +35,11 @@ CharacteristicValue.belongsTo(Characteristic)
 Product.belongsToMany(CharacteristicValue, {through: ProductCharacteristicValue, onDelete: 'CASCADE'})
 CharacteristicValue.belongsToMany(Product, {through: ProductCharacteristicValue, onDelete: 'CASCADE'})
 
-Product.belongsToMany(User, {through: Basket, onDelete: 'CASCADE'})
-User.belongsToMany(Product, {through: Basket, onDelete: 'CASCADE'})
+Product.belongsToMany(MyUser, {through: Basket, onDelete: 'CASCADE'})
+MyUser.belongsToMany(Product, {through: Basket, onDelete: 'CASCADE'})
 
-User.belongsToMany(Role, {through: UserRole, onDelete: 'CASCADE'})
-Role.belongsToMany(User, {through: UserRole, onDelete: 'CASCADE'})
+MyUser.belongsToMany(Role, {through: UserRole, onDelete: 'CASCADE'})
+Role.belongsToMany(MyUser, {through: UserRole, onDelete: 'CASCADE'})
 
 // Product.hasOne(ShopCount, {onDelete: 'CASCADE'})
 // ShopCount.belongsTo(Product)
@@ -47,8 +47,8 @@ Role.belongsToMany(User, {through: UserRole, onDelete: 'CASCADE'})
 Shop.belongsToMany(Product, {through: ShopProduct, onDelete: 'CASCADE'})
 Product.belongsToMany(Shop, {through: ShopProduct, onDelete: 'CASCADE'})
 
-User.hasOne(RefreshToken, {onDelete: 'CASCADE'})
-RefreshToken.belongsTo(User)
+MyUser.hasOne(RefreshToken, {onDelete: 'CASCADE'})
+RefreshToken.belongsTo(MyUser)
 
 Product.belongsToMany(Order, {through: Detail})
 Order.belongsToMany(Product, {through: Detail})

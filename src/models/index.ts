@@ -6,11 +6,13 @@ export { IBanner } from "./banner/types";
 export { ProductCategory } from "./productCategory/model";
 export { IProductCategory } from "./productCategory/types";
 
-export { User } from "./user/model";
-export { IUser } from "./user/types";
-export { IUserAuth } from "./user/types";
-export { UserDto } from "./user/types";
-export { IUserDto } from "./user/types";
+export { MyUser } from "./user/model";
+export { IMyUser } from "./user/types";
+export { IMyUserAuth } from "./user/types";
+export { MyUserDto } from "./user/types";
+export { IMyUserDto } from "./user/types";
+export { IUserVkInfo } from "./user/types";
+export { ITokenVk } from "./user/types";
 
 export { RefreshToken } from "./refreshToken/model";
 export { IRefreshToken } from "./refreshToken/types";

@@ -16,6 +16,8 @@ userRouter.post('/login',
     body('password').isLength({min: 6, max: 20}).withMessage('Пароль должен содержать от 6 до 20 символов'),
     userController.login)
 
+userRouter.post('/vk/login', userController.vk_login)
+    
 userRouter.get('/logout', AuthMiddleware, userController.logout)
 
 userRouter.get('/refresh', userController.refresh)
@@ -29,6 +31,7 @@ userRouter.post('/basket/add/items', AuthMiddleware, userController.basketAddIte
 userRouter.post('/basket/delete', AuthMiddleware, userController.basketDelete)
 userRouter.get('/basket/get', AuthMiddleware, userController.basketGetAll)
 userRouter.post('/basket/count/update', AuthMiddleware, userController.basketCountUpdate)
+
 
 
 export { userRouter }
