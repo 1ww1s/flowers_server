@@ -51,7 +51,6 @@ class ProductService {
             return categoryData.id
         }))
 
-
         const productData = await this.create(product.name, +product.price, product.images, "")
         await productCategoryService.createAll(productData.id, categoriesIds)
 

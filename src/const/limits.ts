@@ -1,4 +1,4 @@
 
 
-export const limitOrders = 2
-export const limitProducts = 2
+export const limitOrders = 4
+export const limitProducts = 16
